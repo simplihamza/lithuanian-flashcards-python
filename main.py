@@ -2,8 +2,14 @@ from tkinter import *
 import pandas
 import random
 
-data = pandas.read_csv("data/Lithuanian_words.csv")
-to_learn = data.to_dict(orient="records")
+try:
+    data = pandas.read_csv("data/words_to_learn.csv")
+    to_learn = data.to_dict(orient="records")
+
+except FileNotFoundError:
+    data = pandas.read_csv("data/Lithuanian_words.csv")
+    to_learn = data.to_dict(orient="records")
+
 flip_timer = None
 
 def next_card():
@@ -23,6 +29,12 @@ def flip_card():
     canvas.itemconfig(card_title, text="English", fill="white")
     canvas.itemconfig(card_word, text=current_card["English"], fill="white")
     canvas.itemconfig(current_img, image=card_back_img)
+
+def is_known():
+    global flip_timer, current_card, to_learn
+    to_learn.remove(current_card)
+    pandas.DataFrame(to_learn).to_csv("data/words_to_learn.csv", index=False)
+    next_card()
 
 # ---------------------------- UI SETUP ------------------------------- #
 
@@ -45,12 +57,14 @@ cross_image = PhotoImage(file="../flash-card-project-start/images/wrong.png")
 tick_image = PhotoImage(file="../flash-card-project-start/images/right.png")
 cross_button = Button(image=cross_image, highlightthickness=0, command=next_card)
 cross_button.grid(row=1, column=0)
-tick_button = Button(image=tick_image, highlightthickness=0, command=next_card)
+tick_button = Button(image=tick_image, highlightthickness=0, command=is_known)
 tick_button.grid(row=1, column=1)
 
 next_card()
 
-
+# TODO-11: Test the full cycle: mark a few words as "known", close the
+#  program, and reopen it — do the words you marked as known correctly
+#  stay OUT of the rotation, while everything else still appears?
 
 
 
